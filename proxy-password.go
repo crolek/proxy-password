@@ -6,7 +6,9 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"os/exec"
+	"os/user"
 	"strings"
 )
 
@@ -21,6 +23,7 @@ type ProxyInfo struct {
 
 var (
 	proxyInfo = new(ProxyInfo)
+	npmrcPath string
 )
 
 const (
@@ -34,8 +37,15 @@ func MockMain() {
 	testPath := "C:\\dev\\go_dev\\src\\main\\.npmrc"
 	parseCommandlineFlags()
 	buildProxyString()
-	createNewFile(testPath)
-	setWindowsVariables()
+	if doesProxyFilesExist() {
+		//update file
+		updateProxyFiles()
+	} else {
+		//create new file
+		createNewFile(testPath)
+		setWindowsVariables()
+	}
+
 }
 
 //proxy = http://username:password@url:80
@@ -92,4 +102,31 @@ func setWindowsVariables() {
 	}
 
 	fmt.Println(out.String())
+}
+
+//currently only checking for .npmrc
+func doesProxyFilesExist() bool {
+	currentUser, err := user.Current()
+	if err != nil {
+		fmt.Println(err)
+	}
+	npmrcPath = currentUser.HomeDir + "\\.npmrc"
+
+	if _, err := os.Stat(npmrcPath); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
+}
+
+//again, only checking for .npmrc
+func updateProxyFiles() {
+	var contents []byte
+	contents, err := ioutil.ReadFile(npmrcPath)
+	fileContents := string(contents)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(fileContents)
 }
