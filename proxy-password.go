@@ -3,6 +3,7 @@ package proxypassword
 import (
 	//"log"
 	"bytes"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os/exec"
@@ -31,7 +32,7 @@ const (
 
 func MockMain() {
 	testPath := "C:\\dev\\go_dev\\src\\main\\.npmrc"
-	bindData()
+	parseCommandlineFlags()
 	buildProxyString()
 	createNewFile(testPath)
 	setWindowsVariables()
@@ -40,13 +41,13 @@ func MockMain() {
 //proxy = http://username:password@url:80
 //https-proxy
 //c:\Users\%USERNAME%\.npmrc
-func bindData() {
+func parseCommandlineFlags() {
+	flag.StringVar(&proxyInfo.username, "username", "username", "the username that the proxy account uses")
+	flag.StringVar(&proxyInfo.password, "password", "password", "the password that the proxy account uses")
+	flag.StringVar(&proxyInfo.proxyUrl, "url", "proxy.testing.com", "the url for the proxy you will be using")
+	flag.StringVar(&proxyInfo.port, "port", "80", "the port number the proxy is using, usually its 80")
 
-	//for testing
-	proxyInfo.username = "Chuck"
-	proxyInfo.password = "testing123"
-	proxyInfo.proxyUrl = "proxy.testing.com"
-	proxyInfo.port = "80"
+	flag.Parse()
 }
 
 func buildProxyString() {
