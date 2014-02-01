@@ -2,27 +2,25 @@ package proxypassword
 
 import (
 	//"log"
+	"bytes"
 	"fmt"
 	"io/ioutil"
+	"os/exec"
 	"strings"
 )
 
 type ProxyInfo struct {
-	username string
-	password string
-	proxyUrl string
-	port     string
+	username          string
+	password          string
+	proxyUrl          string
+	port              string
+	proxyHTTP_String  string
+	proxyHTTPS_String string
 }
 
 var (
 	proxyInfo = new(ProxyInfo)
 )
-
-func MockMain() {
-	testPath := "C:\\dev\\go_dev\\src\\main\\.npmrc"
-	bindData()
-	createNewFile(testPath)
-}
 
 const (
 	FILE_HTTP_START      = "proxy = "
@@ -30,6 +28,14 @@ const (
 	NPMRC_LOCATION_START = "c:/Users/"
 	PROXY_REPLACE_STRING = "http://username:password@url:port"
 )
+
+func MockMain() {
+	testPath := "C:\\dev\\go_dev\\src\\main\\.npmrc"
+	bindData()
+	buildProxyString()
+	createNewFile(testPath)
+	setWindowsVariables()
+}
 
 //proxy = http://username:password@url:80
 //https-proxy
@@ -43,18 +49,21 @@ func bindData() {
 	proxyInfo.port = "80"
 }
 
-func createNewFile(path string) {
-	var data string
-
+func buildProxyString() {
 	replacer := strings.NewReplacer("username", proxyInfo.username,
 		"password", proxyInfo.password,
 		"url", proxyInfo.proxyUrl,
 		"port", proxyInfo.port)
 
-	proxyString := replacer.Replace(PROXY_REPLACE_STRING)
+	proxyInfo.proxyHTTP_String = replacer.Replace(PROXY_REPLACE_STRING)
+	proxyInfo.proxyHTTPS_String = proxyInfo.proxyHTTP_String //a little bit of cheating
+}
 
-	data += FILE_HTTP_START + proxyString + "\n"
-	data += FILE_HTTPS_START + proxyString
+func createNewFile(path string) {
+	var data string
+
+	data += FILE_HTTP_START + proxyInfo.proxyHTTP_String + "\n"
+	data += FILE_HTTPS_START + proxyInfo.proxyHTTPS_String
 
 	fmt.Println(data)
 	err := ioutil.WriteFile(path, []byte(data), 0644)
@@ -62,4 +71,24 @@ func createNewFile(path string) {
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+//This is a hack to get the variables set to the System and not just the instance
+//of this program.
+func setWindowsVariables() {
+	var out bytes.Buffer
+	cmd := exec.Command("setx", "HTTP_PROXY", proxyInfo.proxyHTTP_String, "/m")
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	cmd = exec.Command("setx", "HTTPS_PROXY", proxyInfo.proxyHTTPS_String, "/m")
+	err = cmd.Run()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(out.String())
 }
