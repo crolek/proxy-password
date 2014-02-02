@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"regexp"
 	"strings"
 )
 
@@ -34,7 +35,6 @@ const (
 )
 
 func MockMain() {
-	testPath := "C:\\dev\\go_dev\\src\\main\\.npmrc"
 	parseCommandlineFlags()
 	buildProxyString()
 	if doesProxyFilesExist() {
@@ -42,10 +42,9 @@ func MockMain() {
 		updateProxyFiles()
 	} else {
 		//create new file
-		createNewFile(testPath)
-		setWindowsVariables()
+		createNewFile(npmrcPath)
 	}
-
+	setWindowsVariables()
 }
 
 //proxy = http://username:password@url:80
@@ -128,5 +127,14 @@ func updateProxyFiles() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(fileContents)
+
+	err = ioutil.WriteFile(npmrcPath, []byte(updatePassword(fileContents)), 0644)
+}
+
+//this needs symbol support for finding the password
+func updatePassword(proxyString string) string {
+	//i'm horrible at regex so this will do for now.
+	regex := regexp.MustCompile("(:)((?:[a-z][a-z0-9_]*))(@)")
+	results := regex.ReplaceAllLiteralString(proxyString, ":"+proxyInfo.password+"@")
+	return results
 }
