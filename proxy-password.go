@@ -137,13 +137,11 @@ func updateProxyFiles() {
 		fmt.Println(err)
 	}
 
-	err = ioutil.WriteFile(npmrcPath, []byte(updatePassword(fileContents)), 0644)
+	err = ioutil.WriteFile(npmrcPath, []byte(updateUsernamePassword(fileContents)), 0644)
 }
 
-//this needs symbol support for finding the password
-func updatePassword(proxyString string) string {
-	//i'm horrible at regex so this will do for now.
-	regex := regexp.MustCompile("(:)((?:[a-z][a-z0-9_]*))(@)")
-	results := regex.ReplaceAllLiteralString(proxyString, ":"+proxyInfo.password+"@")
+func updateUsernamePassword(proxyString string) string {
+	regex := regexp.MustCompile("(https?://)(.*?):(.*?)(@.*)")
+	results := regex.ReplaceAllString(proxyString, "${1}"+proxyInfo.username+":"+proxyInfo.password+"${4}")
 	return results
 }
