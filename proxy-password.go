@@ -11,6 +11,8 @@ import (
 	"os/user"
 	"regexp"
 	"strings"
+
+	//"github.com/howeyc/gopass" //can't get it to function with username, re-evaluate later
 )
 
 type ProxyInfo struct {
@@ -35,7 +37,9 @@ const (
 )
 
 func MockMain() {
-	parseCommandlineFlags()
+	caputerUsernamePassword()
+	//parseCommandlineFlags()
+	fmt.Println("Starting the update process")
 	buildProxyString()
 	if doesProxyFilesExist() {
 		//update file
@@ -45,11 +49,17 @@ func MockMain() {
 		createNewFile(npmrcPath)
 	}
 	setWindowsVariables()
+	fmt.Println("Your proxy info has been updated. :)")
+}
+func caputerUsernamePassword() {
+	fmt.Print("Username: ")
+	fmt.Scan(&proxyInfo.username)
+	fmt.Print("Password: ")
+	fmt.Scan(&proxyInfo.password)
+	fmt.Println(proxyInfo.username)
+	fmt.Println(proxyInfo.password)
 }
 
-//proxy = http://username:password@url:80
-//https-proxy
-//c:\Users\%USERNAME%\.npmrc
 func parseCommandlineFlags() {
 	flag.StringVar(&proxyInfo.username, "username", "username", "the username that the proxy account uses")
 	flag.StringVar(&proxyInfo.password, "password", "password", "the password that the proxy account uses")
@@ -60,7 +70,8 @@ func parseCommandlineFlags() {
 }
 
 func buildProxyString() {
-	replacer := strings.NewReplacer("username", proxyInfo.username,
+	replacer := strings.NewReplacer(
+		"username", proxyInfo.username,
 		"password", proxyInfo.password,
 		"url", proxyInfo.proxyUrl,
 		"port", proxyInfo.port)
@@ -90,17 +101,15 @@ func setWindowsVariables() {
 	cmd := exec.Command("setx", "HTTP_PROXY", proxyInfo.proxyHTTP_String, "/m")
 	cmd.Stdout = &out
 	err := cmd.Run()
-	if err != nil {
+	if err != nil && err.Error() != "exit status 1" {
 		fmt.Println(err)
 	}
 
 	cmd = exec.Command("setx", "HTTPS_PROXY", proxyInfo.proxyHTTPS_String, "/m")
 	err = cmd.Run()
-	if err != nil {
+	if err != nil && err.Error() != "exit status 1" {
 		fmt.Println(err)
 	}
-
-	fmt.Println(out.String())
 }
 
 //currently only checking for .npmrc
