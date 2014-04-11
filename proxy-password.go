@@ -1,4 +1,4 @@
-package proxypassword
+package main
 
 import (
 	//"log"
@@ -25,7 +25,7 @@ type ProxyInfo struct {
 }
 
 var (
-	proxyInfo = new(ProxyInfo)
+	proxyInfo ProxyInfo
 	npmrcPath string
 )
 
@@ -36,21 +36,22 @@ const (
 	PROXY_REPLACE_STRING = "http://username:password@url:port"
 )
 
-func MockMain() {
+func main() {
 	caputerUsernamePassword()
 	//parseCommandlineFlags()
 	fmt.Println("Starting the update process")
 	buildProxyString()
-	if doesProxyFilesExist() {
+	if doesProxyFilesExist("\\.npmrc") {
 		//update file
 		updateProxyFiles()
 	} else {
 		//create new file
 		createNewFile(npmrcPath)
 	}
-	setWindowsVariables()
+	setWindowsVariables(proxyInfo)
 	fmt.Println("Your proxy info has been updated. :)")
 }
+
 func caputerUsernamePassword() {
 	fmt.Print("Username: ")
 	fmt.Scan(&proxyInfo.username)
@@ -96,16 +97,16 @@ func createNewFile(path string) {
 
 //This is a hack to get the variables set to the System and not just the instance
 //of this program.
-func setWindowsVariables() {
+func setWindowsVariables(info ProxyInfo) {
 	var out bytes.Buffer
-	cmd := exec.Command("setx", "HTTP_PROXY", proxyInfo.proxyHTTP_String, "/m")
+	cmd := exec.Command("setx", "HTTP_PROXY", info.proxyHTTP_String, "/m")
 	cmd.Stdout = &out
 	err := cmd.Run()
 	if err != nil && err.Error() != "exit status 1" {
 		fmt.Println(err)
 	}
 
-	cmd = exec.Command("setx", "HTTPS_PROXY", proxyInfo.proxyHTTPS_String, "/m")
+	cmd = exec.Command("setx", "HTTPS_PROXY", info.proxyHTTPS_String, "/m")
 	err = cmd.Run()
 	if err != nil && err.Error() != "exit status 1" {
 		fmt.Println(err)
@@ -113,12 +114,12 @@ func setWindowsVariables() {
 }
 
 //currently only checking for .npmrc
-func doesProxyFilesExist() bool {
+func doesProxyFilesExist(fileName string) bool {
 	currentUser, err := user.Current()
 	if err != nil {
 		fmt.Println(err)
 	}
-	npmrcPath = currentUser.HomeDir + "\\.npmrc"
+	npmrcPath = currentUser.HomeDir + fileName
 
 	if _, err := os.Stat(npmrcPath); err != nil {
 		if os.IsNotExist(err) {
@@ -137,11 +138,11 @@ func updateProxyFiles() {
 		fmt.Println(err)
 	}
 
-	err = ioutil.WriteFile(npmrcPath, []byte(updateUsernamePassword(fileContents)), 0644)
+	err = ioutil.WriteFile(npmrcPath, []byte(updateUsernamePassword(fileContents, proxyInfo)), 0644)
 }
 
-func updateUsernamePassword(proxyString string) string {
+func updateUsernamePassword(proxyString string, info ProxyInfo) string {
 	regex := regexp.MustCompile("(https?://)(.*?):(.*?)(@.*)")
-	results := regex.ReplaceAllString(proxyString, "${1}"+proxyInfo.username+":"+proxyInfo.password+"${4}")
+	results := regex.ReplaceAllString(proxyString, "${1}"+info.username+":"+info.password+"${4}")
 	return results
 }
