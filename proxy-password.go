@@ -119,7 +119,8 @@ func doesProxyFilesExist(fileName string) bool {
 	if err != nil {
 		fmt.Println(err)
 	}
-	npmrcPath = currentUser.HomeDir + fileName
+
+	npmrcPath := currentUser.HomeDir + fileName
 
 	if _, err := os.Stat(npmrcPath); err != nil {
 		if os.IsNotExist(err) {
