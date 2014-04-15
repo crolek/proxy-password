@@ -1,13 +1,11 @@
 package main
 
 import (
-	//"log"
-	"bytes"
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
-	"os/exec"
 	"os/user"
 	"regexp"
 	"strings"
@@ -48,7 +46,8 @@ func main() {
 		//create new file
 		createNewFile(npmrcPath)
 	}
-	setWindowsVariables(proxyInfo)
+	setWindowsVariables("HTTP_PROXY", proxyInfo.proxyHTTP_String)
+	setWindowsVariables("HTTPS_PROXY", proxyInfo.proxyHTTPS_String)
 	fmt.Println("Your proxy info has been updated. :)")
 }
 
@@ -95,21 +94,10 @@ func createNewFile(path string) {
 	}
 }
 
-//This is a hack to get the variables set to the System and not just the instance
-//of this program.
-func setWindowsVariables(info ProxyInfo) {
-	var out bytes.Buffer
-	cmd := exec.Command("setx", "HTTP_PROXY", info.proxyHTTP_String, "/m")
-	cmd.Stdout = &out
-	err := cmd.Run()
-	if err != nil && err.Error() != "exit status 1" {
-		fmt.Println(err)
-	}
-
-	cmd = exec.Command("setx", "HTTPS_PROXY", info.proxyHTTPS_String, "/m")
-	err = cmd.Run()
-	if err != nil && err.Error() != "exit status 1" {
-		fmt.Println(err)
+func setWindowsVariables(key string, value string) {
+	err := os.Setenv(key, value)
+	if err != nil {
+		log.Println(err)
 	}
 }
 
