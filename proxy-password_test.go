@@ -9,10 +9,30 @@ import (
 var proxyInfoTest = ProxyInfo{"crolek", "sweetPassword", "chuckrolek.com", "80", "http://crolek:sweetPassword@chuckrolek.com:80", "http://crolek:sweetPassword@chuckrolek.com:80"}
 var testHTTP = "PP_TEST_HTTP"
 var testHTTP_Value = "testhttp"
-var testHTTP_SetString = "setx" + testHTTP + " " + testHTTP_Value
 var testHTTPS = "PP_TEST_HTTPS"
 var testHTTPS_Value = "testhttps"
-var testHTTPS_SetString = "setx " + testHTTPS + " " + testHTTPS_Value
+
+func TestCreateNewFile(t *testing.T) {
+	var err error
+	var isTestFileCreated bool
+	var testConfiguration = NPM_Config
+	testConfiguration.proxyInfo = proxyInfoTest
+	testConfiguration.configFilePath, err = os.Getwd()
+	if err != nil {
+		log.Println(err)
+	}
+	testConfiguration.configFilePath = testConfiguration.configFilePath + "/test_files/test_create_file.txt"
+	createNewFile(testConfiguration)
+	if _, err := os.Stat(testConfiguration.configFilePath); err != nil {
+		if os.IsNotExist(err) {
+			isTestFileCreated = false
+		}
+	} else {
+		isTestFileCreated = true
+	}
+
+	IsTrueOrFalse(t, isTestFileCreated, true, "test file was created")
+}
 
 func TestSetWindowsVariables(t *testing.T) {
 	resetTestSystemVariables()

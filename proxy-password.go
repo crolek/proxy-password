@@ -13,23 +13,12 @@ import (
 	//"github.com/howeyc/gopass" //can't get it to function with username, re-evaluate later
 )
 
-type ProxyInfo struct {
-	username          string
-	password          string
-	proxyUrl          string
-	port              string
-	proxyHTTP_String  string
-	proxyHTTPS_String string
-}
-
 var (
 	proxyInfo ProxyInfo
 	npmrcPath string
 )
 
 const (
-	FILE_HTTP_START      = "proxy = "
-	FILE_HTTPS_START     = "https-proxy = "
 	NPMRC_LOCATION_START = "c:/Users/"
 	PROXY_REPLACE_STRING = "http://username:password@url:port"
 )
@@ -44,7 +33,8 @@ func main() {
 		updateProxyFiles()
 	} else {
 		//create new file
-		createNewFile(npmrcPath)
+		//commented out until new struct system is in place
+		//createNewFile(npmrcPath)
 	}
 	setWindowsVariables("HTTP_PROXY", proxyInfo.proxyHTTP_String)
 	setWindowsVariables("HTTPS_PROXY", proxyInfo.proxyHTTPS_String)
@@ -80,17 +70,17 @@ func buildProxyString() {
 	proxyInfo.proxyHTTPS_String = proxyInfo.proxyHTTP_String //a little bit of cheating
 }
 
-func createNewFile(path string) {
+func createNewFile(configInfo ConfigInfo) {
 	var data string
 
-	data += FILE_HTTP_START + proxyInfo.proxyHTTP_String + "\n"
-	data += FILE_HTTPS_START + proxyInfo.proxyHTTPS_String
+	data += configInfo.FILE_HTTP_START + configInfo.proxyInfo.proxyHTTP_String + "\n"
+	data += configInfo.FILE_HTTPS_START + configInfo.proxyInfo.proxyHTTPS_String
 
-	fmt.Println(data)
-	err := ioutil.WriteFile(path, []byte(data), 0644)
+	log.Println(data)
+	err := ioutil.WriteFile(configInfo.configFilePath, []byte(data), 0644)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 }
 

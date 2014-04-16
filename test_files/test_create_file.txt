@@ -1,0 +1,2 @@
+proxy = http://crolek:sweetPassword@chuckrolek.com:80
+https-proxy = http://crolek:sweetPassword@chuckrolek.com:80
