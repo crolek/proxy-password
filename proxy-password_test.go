@@ -6,11 +6,28 @@ import (
 	"testing"
 )
 
-var proxyInfoTest = ProxyInfo{"crolek", "sweetPassword", "chuckrolek.com", "80", "http://crolek:sweetPassword@chuckrolek.com:80", "http://crolek:sweetPassword@chuckrolek.com:80"}
+var proxyInfoTest = ProxyInfo{"crolek", "sweetPassword", "chuckrolek.com", "80", "", ""}
 var testHTTP = "PP_TEST_HTTP"
 var testHTTP_Value = "testhttp"
 var testHTTPS = "PP_TEST_HTTPS"
 var testHTTPS_Value = "testhttps"
+var testHTTP_ProxyString = "http://crolek:sweetPassword@chuckrolek.com:80"
+var testHTTPS_ProxyString = testHTTP_ProxyString //yes, it's the same in this case.
+
+func TestBuildConfig(t *testing.T) {
+	//that lovely integration test
+}
+
+func TestBuildProxyInfo(t *testing.T) {
+	var testingConfig = NPM_Config
+
+	testingConfig.proxyInfo = proxyInfoTest
+	httpResult, httpsResult := buildProxyString(testingConfig)
+
+	EqualString(t, httpResult, testHTTP_ProxyString, "properly built the http string from proxyInfo")
+	EqualString(t, httpsResult, testHTTPS_ProxyString, "properly built the https string from proxyInfo")
+
+}
 
 func TestCreateNewFile(t *testing.T) {
 	var err error
@@ -49,7 +66,12 @@ func TestUpdateUsernamePassword(t *testing.T) {
 func TestDoesProxyFileExist(t *testing.T) {
 	//currently performing a check for a false file until I have a better integraiton test
 	//should return false
+	var testingConfig = NPM_Config
+
+	testingConfig.proxyInfo = proxyInfoTest
+
 	IsTrueOrFalse(t, doesProxyFilesExist(".fileThatDoesNotExist"), false, "correctly detected the lack of a file")
+	IsTrueOrFalse(t, doesProxyFilesExist(testingConfig.configFilePath), true, "correctly detected the lack of a file")
 }
 
 func resetTestSystemVariables() {

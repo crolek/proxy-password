@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -24,64 +23,36 @@ const (
 )
 
 func main() {
-	caputerUsernamePassword()
-	//parseCommandlineFlags()
 	fmt.Println("Starting the update process")
-	buildProxyString()
-	if doesProxyFilesExist("\\.npmrc") {
-		//update file
-		updateProxyFiles()
-	} else {
-		//create new file
-		//commented out until new struct system is in place
-		//createNewFile(npmrcPath)
-	}
-	setWindowsVariables("HTTP_PROXY", proxyInfo.proxyHTTP_String)
-	setWindowsVariables("HTTPS_PROXY", proxyInfo.proxyHTTPS_String)
+	//gearing up for the next feature :D
+	//buildConfig(configInfo)
 	fmt.Println("Your proxy info has been updated. :)")
 }
 
-func caputerUsernamePassword() {
-	fmt.Print("Username: ")
-	fmt.Scan(&proxyInfo.username)
-	fmt.Print("Password: ")
-	fmt.Scan(&proxyInfo.password)
-	fmt.Println(proxyInfo.username)
-	fmt.Println(proxyInfo.password)
+func buildConfig(configInfo ConfigInfo) {
+	//build info
+	configInfo.proxyInfo.proxyHTTP_String, configInfo.proxyInfo.proxyHTTPS_String = buildProxyString(configInfo)
+	createNewFile(configInfo)
+	setProxyConfigVariables(configInfo)
+
 }
 
-func parseCommandlineFlags() {
-	flag.StringVar(&proxyInfo.username, "username", "username", "the username that the proxy account uses")
-	flag.StringVar(&proxyInfo.password, "password", "password", "the password that the proxy account uses")
-	flag.StringVar(&proxyInfo.proxyUrl, "url", "proxy.testing.com", "the url for the proxy you will be using")
-	flag.StringVar(&proxyInfo.port, "port", "80", "the port number the proxy is using, usually its 80")
-
-	flag.Parse()
-}
-
-func buildProxyString() {
+func buildProxyString(configInfo ConfigInfo) (http string, https string) {
 	replacer := strings.NewReplacer(
-		"username", proxyInfo.username,
-		"password", proxyInfo.password,
-		"url", proxyInfo.proxyUrl,
-		"port", proxyInfo.port)
+		"username", configInfo.proxyInfo.username,
+		"password", configInfo.proxyInfo.password,
+		"url", configInfo.proxyInfo.proxyUrl,
+		"port", configInfo.proxyInfo.port)
 
-	proxyInfo.proxyHTTP_String = replacer.Replace(PROXY_REPLACE_STRING)
-	proxyInfo.proxyHTTPS_String = proxyInfo.proxyHTTP_String //a little bit of cheating
+	h := replacer.Replace(PROXY_REPLACE_STRING)
+	hs := h //a little bit of cheating
+
+	return h, hs
 }
 
-func createNewFile(configInfo ConfigInfo) {
-	var data string
-
-	data += configInfo.FILE_HTTP_START + configInfo.proxyInfo.proxyHTTP_String + "\n"
-	data += configInfo.FILE_HTTPS_START + configInfo.proxyInfo.proxyHTTPS_String
-
-	log.Println(data)
-	err := ioutil.WriteFile(configInfo.configFilePath, []byte(data), 0644)
-
-	if err != nil {
-		log.Println(err)
-	}
+func setProxyConfigVariables(configInfo ConfigInfo) {
+	setWindowsVariables("HTTP_PROXY", configInfo.proxyInfo.proxyHTTP_String)
+	setWindowsVariables("HTTPS_PROXY", configInfo.proxyInfo.proxyHTTPS_String)
 }
 
 func setWindowsVariables(key string, value string) {
@@ -89,6 +60,14 @@ func setWindowsVariables(key string, value string) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func updateOrCreateProxyFile(configInfo ConfigInfo) (status string, err error) {
+	if doesProxyFilesExist(configInfo.configFilePath) {
+		updateProxyFiles()
+	}
+
+	//return a new error saying update/create file failed
 }
 
 //currently only checking for .npmrc
@@ -108,8 +87,22 @@ func doesProxyFilesExist(fileName string) bool {
 	return true
 }
 
+func createNewFile(configInfo ConfigInfo) {
+	var data string
+
+	data += configInfo.FILE_HTTP_START + configInfo.proxyInfo.proxyHTTP_String + "\n"
+	data += configInfo.FILE_HTTPS_START + configInfo.proxyInfo.proxyHTTPS_String
+
+	log.Println(data)
+	err := ioutil.WriteFile(configInfo.configFilePath, []byte(data), 0644)
+
+	if err != nil {
+		log.Println(err)
+	}
+}
+
 //again, only checking for .npmrc
-func updateProxyFiles() {
+func updateProxyFiles(configInfo ConfigInfo) {
 	var contents []byte
 	contents, err := ioutil.ReadFile(npmrcPath)
 	fileContents := string(contents)
@@ -117,7 +110,7 @@ func updateProxyFiles() {
 		fmt.Println(err)
 	}
 
-	err = ioutil.WriteFile(npmrcPath, []byte(updateUsernamePassword(fileContents, proxyInfo)), 0644)
+	err = ioutil.WriteFile(npmrcPath, []byte(updateUsernamePassword(fileContents, configInfo.proxyInfo)), 0644)
 }
 
 func updateUsernamePassword(proxyString string, info ProxyInfo) string {
