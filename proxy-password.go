@@ -63,23 +63,42 @@ func setWindowsVariables(key string, value string) {
 }
 
 func updateOrCreateProxyFile(configInfo ConfigInfo) (status string, err error) {
-	if doesProxyFilesExist(configInfo.configFilePath) {
-		updateProxyFiles()
+	//This should go into a func or something for all of them.
+	configInfo.configFilePath = getUserHomeDirectory() + configInfo.configFileName
+
+	if doesFileExist(configInfo.configFilePath) {
+		err := updateProxyFiles(configInfo)
+		if err != nil {
+			log.Println(err)
+			return "", err
+		}
+
+		return "Updated the proxy files", nil
+	} else {
+		err := createProxyFiles(configInfo)
+		if err != nil {
+			log.Println(err)
+			return "", err
+		}
+
+		return "Created the proxy files", nil
 	}
 
 	//return a new error saying update/create file failed
 }
 
 //currently only checking for .npmrc
-func doesProxyFilesExist(fileName string) bool {
+func getUserHomeDirectory() string {
 	currentUser, err := user.Current()
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	npmrcPath := currentUser.HomeDir + fileName
+	return currentUser.HomeDir
+}
 
-	if _, err := os.Stat(npmrcPath); err != nil {
+func doesFileExist(filePath string) bool {
+	if _, err := os.Stat(filePath); err != nil {
 		if os.IsNotExist(err) {
 			return false
 		}
@@ -101,16 +120,23 @@ func createNewFile(configInfo ConfigInfo) {
 	}
 }
 
+func createProxyFiles(configInfo ConfigInfo) (err error) {
+
+	return nil
+}
+
 //again, only checking for .npmrc
-func updateProxyFiles(configInfo ConfigInfo) {
+func updateProxyFiles(configInfo ConfigInfo) (err error) {
 	var contents []byte
-	contents, err := ioutil.ReadFile(npmrcPath)
+	contents, e := ioutil.ReadFile(npmrcPath)
 	fileContents := string(contents)
-	if err != nil {
-		fmt.Println(err)
+	if e != nil {
+		fmt.Println(e)
 	}
 
-	err = ioutil.WriteFile(npmrcPath, []byte(updateUsernamePassword(fileContents, configInfo.proxyInfo)), 0644)
+	e = ioutil.WriteFile(npmrcPath, []byte(updateUsernamePassword(fileContents, configInfo.proxyInfo)), 0644)
+
+	return e
 }
 
 func updateUsernamePassword(proxyString string, info ProxyInfo) string {

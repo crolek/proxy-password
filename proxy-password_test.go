@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 	"testing"
@@ -31,7 +32,6 @@ func TestBuildProxyInfo(t *testing.T) {
 
 func TestCreateNewFile(t *testing.T) {
 	var err error
-	var isTestFileCreated bool
 	var testConfiguration = NPM_Config
 	testConfiguration.proxyInfo = proxyInfoTest
 	testConfiguration.configFilePath, err = os.Getwd()
@@ -39,16 +39,16 @@ func TestCreateNewFile(t *testing.T) {
 		log.Println(err)
 	}
 	testConfiguration.configFilePath = testConfiguration.configFilePath + "/test_files/test_create_file.txt"
+	//remove the file if its there already
+	_ = os.Remove(testConfiguration.configFilePath)
+
 	createNewFile(testConfiguration)
-	if _, err := os.Stat(testConfiguration.configFilePath); err != nil {
-		if os.IsNotExist(err) {
-			isTestFileCreated = false
-		}
-	} else {
-		isTestFileCreated = true
-	}
+	isTestFileCreated := doesFileExist(testConfiguration.configFilePath)
 
 	IsTrueOrFalse(t, isTestFileCreated, true, "test file was created")
+
+	//remove the test file(s) to keep a clean testing area.
+	_ = os.Remove(testConfiguration.configFilePath)
 }
 
 func TestSetWindowsVariables(t *testing.T) {
@@ -63,15 +63,19 @@ func TestUpdateUsernamePassword(t *testing.T) {
 	EqualString(t, updateUsernamePassword(PROXY_REPLACE_STRING, proxyInfoTest), "http://crolek:sweetPassword@url:port", "updating clean username/password")
 }
 
-func TestDoesProxyFileExist(t *testing.T) {
-	//currently performing a check for a false file until I have a better integraiton test
-	//should return false
-	var testingConfig = NPM_Config
+func TestDoesFileExist(t *testing.T) {
+	var testFileLocation = "test_files/test-file.txt"
 
-	testingConfig.proxyInfo = proxyInfoTest
+	IsTrueOrFalse(t, doesFileExist(".fileThatDoesNotExist"), false, "correctly detected the lack of a file")
 
-	IsTrueOrFalse(t, doesProxyFilesExist(".fileThatDoesNotExist"), false, "correctly detected the lack of a file")
-	IsTrueOrFalse(t, doesProxyFilesExist(testingConfig.configFilePath), true, "correctly detected the lack of a file")
+	err := ioutil.WriteFile(testFileLocation, []byte("sweet data"), 0644)
+	if err != nil {
+		log.Println(err)
+		t.Fail() //the Fail() might be redudant, but i guess thats okay
+	}
+	IsTrueOrFalse(t, doesFileExist(testFileLocation), true, "correctly detected the there was a test file")
+
+	_ = os.Remove(testFileLocation)
 }
 
 func resetTestSystemVariables() {
