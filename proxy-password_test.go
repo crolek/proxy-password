@@ -7,7 +7,8 @@ import (
 	"testing"
 )
 
-var proxyInfoTest = ProxyInfo{"crolek", "sweetPassword", "chuckrolek.com", "80", "", ""}
+var testProxyInfo = ProxyInfo{"crolek", "sweetPassword", "chuckrolek.com", "80", "", ""}
+var testConfigInfo = ConfigInfo{"", "", "", "", testProxyInfo}
 var testHTTP = "PP_TEST_HTTP"
 var testHTTP_Value = "testhttp"
 var testHTTPS = "PP_TEST_HTTPS"
@@ -22,7 +23,7 @@ func TestBuildConfig(t *testing.T) {
 func TestBuildProxyInfo(t *testing.T) {
 	var testingConfig = NPM_Config
 
-	testingConfig.proxyInfo = proxyInfoTest
+	testingConfig.proxyInfo = testProxyInfo
 	httpResult, httpsResult := buildProxyString(testingConfig)
 
 	EqualString(t, httpResult, testHTTP_ProxyString, "properly built the http string from proxyInfo")
@@ -33,12 +34,16 @@ func TestBuildProxyInfo(t *testing.T) {
 func TestCreateNewFile(t *testing.T) {
 	var err error
 	var testConfiguration = NPM_Config
-	testConfiguration.proxyInfo = proxyInfoTest
+
+	//remove the test file(s) to keep a clean testing area.
+	_ = os.Remove(testConfiguration.configFilePath)
+
+	testConfiguration.proxyInfo = testProxyInfo
 	testConfiguration.configFilePath, err = os.Getwd()
 	if err != nil {
 		log.Println(err)
 	}
-	testConfiguration.configFilePath = testConfiguration.configFilePath + "/test_files/test_create_file.txt"
+	testConfiguration.configFilePath = testConfiguration.configFilePath + "/test_files/test_create_file.dont-track"
 	//remove the file if its there already
 	_ = os.Remove(testConfiguration.configFilePath)
 
@@ -47,8 +52,32 @@ func TestCreateNewFile(t *testing.T) {
 
 	IsTrueOrFalse(t, isTestFileCreated, true, "test file was created")
 
-	//remove the test file(s) to keep a clean testing area.
-	_ = os.Remove(testConfiguration.configFilePath)
+}
+
+func TestUpdateProxyFile(t *testing.T) {
+	//setting up a test file location
+	testConfigInfo.configFilePath = "test_files/TestUpdateProxyFile-actual.npmrc"
+
+	//resetting the file for the test
+	contents, err := ioutil.ReadFile("test_files/TestUpdateProxyFile-reset.npmrc")
+	err = ioutil.WriteFile(testConfigInfo.configFilePath, contents, 0644)
+
+	if err != nil {
+		t.Fail()
+	}
+
+	updateProxyFiles(testConfigInfo)
+	contents, err = ioutil.ReadFile(testConfigInfo.configFilePath)
+	actual := string(contents)
+
+	contents, err = ioutil.ReadFile("test_files/TestUpdateProxyFile-expected.npmrc")
+	expected := string(contents)
+
+	if err != nil {
+		t.Fail()
+	}
+
+	EqualString(t, actual, expected, "proxy file was updated")
 }
 
 func TestSetWindowsVariables(t *testing.T) {
@@ -60,11 +89,11 @@ func TestSetWindowsVariables(t *testing.T) {
 }
 
 func TestUpdateUsernamePassword(t *testing.T) {
-	EqualString(t, updateUsernamePassword(PROXY_REPLACE_STRING, proxyInfoTest), "http://crolek:sweetPassword@url:port", "updating clean username/password")
+	EqualString(t, updateUsernamePassword(PROXY_REPLACE_STRING, testProxyInfo), "http://crolek:sweetPassword@url:port", "updating clean username/password")
 }
 
 func TestDoesFileExist(t *testing.T) {
-	var testFileLocation = "test_files/test-file.txt"
+	var testFileLocation = "test_files/test-file.dont-track"
 
 	IsTrueOrFalse(t, doesFileExist(".fileThatDoesNotExist"), false, "correctly detected the lack of a file")
 

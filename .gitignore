@@ -1,1 +1,4 @@
 !/dist/proxy-password.exe
+
+#to not track locally created test files (if needed)
+/test_files/*.dont-track

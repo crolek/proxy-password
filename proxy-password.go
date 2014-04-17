@@ -128,13 +128,13 @@ func createProxyFiles(configInfo ConfigInfo) (err error) {
 //again, only checking for .npmrc
 func updateProxyFiles(configInfo ConfigInfo) (err error) {
 	var contents []byte
-	contents, e := ioutil.ReadFile(npmrcPath)
+	contents, e := ioutil.ReadFile(configInfo.configFilePath)
 	fileContents := string(contents)
 	if e != nil {
 		fmt.Println(e)
 	}
 
-	e = ioutil.WriteFile(npmrcPath, []byte(updateUsernamePassword(fileContents, configInfo.proxyInfo)), 0644)
+	e = ioutil.WriteFile(configInfo.configFilePath, []byte(updateUsernamePassword(fileContents, configInfo.proxyInfo)), 0644)
 
 	return e
 }
