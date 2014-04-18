@@ -35,9 +35,6 @@ func TestCreateNewFile(t *testing.T) {
 	var err error
 	var testConfiguration = NPM_Config
 
-	//remove the test file(s) to keep a clean testing area.
-	_ = os.Remove(testConfiguration.configFilePath)
-
 	testConfiguration.proxyInfo = testProxyInfo
 	testConfiguration.configFilePath, err = os.Getwd()
 	if err != nil {
@@ -47,11 +44,20 @@ func TestCreateNewFile(t *testing.T) {
 	//remove the file if its there already
 	_ = os.Remove(testConfiguration.configFilePath)
 
-	createNewFile(testConfiguration)
+	createNewFile(testConfiguration.configFilePath, "some test content")
 	isTestFileCreated := doesFileExist(testConfiguration.configFilePath)
 
+	contents, err := ioutil.ReadFile(testConfiguration.configFilePath)
+	fileContents := string(contents)
+	if err != nil {
+		t.Fail()
+	}
+
+	EqualString(t, fileContents, "some test content", "The correct data was writtent to a file")
 	IsTrueOrFalse(t, isTestFileCreated, true, "test file was created")
 
+	//remove the test file(s) to keep a clean testing area.
+	_ = os.Remove(testConfiguration.configFilePath)
 }
 
 func TestUpdateProxyFile(t *testing.T) {

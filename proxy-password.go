@@ -32,7 +32,7 @@ func main() {
 func buildConfig(configInfo ConfigInfo) {
 	//build info
 	configInfo.proxyInfo.proxyHTTP_String, configInfo.proxyInfo.proxyHTTPS_String = buildProxyString(configInfo)
-	createNewFile(configInfo)
+	createNewFile(configInfo.configFilePath, getProxyFileContent(configInfo))
 	setProxyConfigVariables(configInfo)
 
 }
@@ -75,11 +75,7 @@ func updateOrCreateProxyFile(configInfo ConfigInfo) (status string, err error) {
 
 		return "Updated the proxy files", nil
 	} else {
-		err := createProxyFiles(configInfo)
-		if err != nil {
-			log.Println(err)
-			return "", err
-		}
+		createNewFile(configInfo.configFilePath, getProxyFileContent(configInfo))
 
 		return "Created the proxy files", nil
 	}
@@ -106,26 +102,21 @@ func doesFileExist(filePath string) bool {
 	return true
 }
 
-func createNewFile(configInfo ConfigInfo) {
-	var data string
-
-	data += configInfo.FILE_HTTP_START + configInfo.proxyInfo.proxyHTTP_String + "\n"
-	data += configInfo.FILE_HTTPS_START + configInfo.proxyInfo.proxyHTTPS_String
-
-	log.Println(data)
-	err := ioutil.WriteFile(configInfo.configFilePath, []byte(data), 0644)
+func createNewFile(filepath string, content string) {
+	err := ioutil.WriteFile(filepath, []byte(content), 0644)
 
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-func createProxyFiles(configInfo ConfigInfo) (err error) {
+func getProxyFileContent(configInfo ConfigInfo) (content string) {
+	data := configInfo.FILE_HTTP_START + configInfo.proxyInfo.proxyHTTP_String + "\n"
+	data += configInfo.FILE_HTTPS_START + configInfo.proxyInfo.proxyHTTPS_String
 
-	return nil
+	return data
 }
 
-//again, only checking for .npmrc
 func updateProxyFiles(configInfo ConfigInfo) (err error) {
 	var contents []byte
 	contents, e := ioutil.ReadFile(configInfo.configFilePath)
