@@ -18,6 +18,7 @@ var testHTTPS_ProxyString = testHTTP_ProxyString //yes, it's the same in this ca
 
 func TestBuildConfig(t *testing.T) {
 	//that lovely integration test
+	buildConfig(testConfigInfo)
 }
 
 func TestBuildProxyInfo(t *testing.T) {

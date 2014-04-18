@@ -31,10 +31,26 @@ func main() {
 
 func buildConfig(configInfo ConfigInfo) {
 	//build info
+	//i should probably have every method throw erros up to here and fail the build if
+	//anyone errors
 	configInfo.proxyInfo.proxyHTTP_String, configInfo.proxyInfo.proxyHTTPS_String = buildProxyString(configInfo)
 	createNewFile(configInfo.configFilePath, getProxyFileContent(configInfo))
-	setProxyConfigVariables(configInfo)
 
+	setVariablesError := setProxyConfigVariables(configInfo)
+
+	if setVariablesError != nil {
+		log.Println("Error updating system variables: ")
+		log.Println(setVariablesError)
+	}
+
+	status, updateCreateError := updateOrCreateProxyFile(configInfo)
+
+	if updateCreateError != nil {
+		log.Println("Error updating/creating proxy file(s): ")
+		log.Println(updateCreateError)
+	} else {
+		log.Println(status + " proxy file(s)")
+	}
 }
 
 func buildProxyString(configInfo ConfigInfo) (http string, https string) {
@@ -50,16 +66,24 @@ func buildProxyString(configInfo ConfigInfo) (http string, https string) {
 	return h, hs
 }
 
-func setProxyConfigVariables(configInfo ConfigInfo) {
-	setWindowsVariables("HTTP_PROXY", configInfo.proxyInfo.proxyHTTP_String)
-	setWindowsVariables("HTTPS_PROXY", configInfo.proxyInfo.proxyHTTPS_String)
+func setProxyConfigVariables(configInfo ConfigInfo) (err error) {
+	httpError := setWindowsVariables("HTTP_PROXY", configInfo.proxyInfo.proxyHTTP_String)
+	if httpError != nil {
+		return httpError
+	}
+
+	httpsError := setWindowsVariables("HTTPS_PROXY", configInfo.proxyInfo.proxyHTTPS_String)
+
+	if httpsError != nil {
+		return httpsError
+	}
+
+	return nil
 }
 
-func setWindowsVariables(key string, value string) {
-	err := os.Setenv(key, value)
-	if err != nil {
-		log.Println(err)
-	}
+func setWindowsVariables(key string, value string) (err error) {
+	setEnvError := os.Setenv(key, value)
+	return setEnvError
 }
 
 func updateOrCreateProxyFile(configInfo ConfigInfo) (status string, err error) {
@@ -73,11 +97,11 @@ func updateOrCreateProxyFile(configInfo ConfigInfo) (status string, err error) {
 			return "", err
 		}
 
-		return "Updated the proxy files", nil
+		return "Updated", nil
 	} else {
 		createNewFile(configInfo.configFilePath, getProxyFileContent(configInfo))
 
-		return "Created the proxy files", nil
+		return "Created", nil
 	}
 
 	//return a new error saying update/create file failed
