@@ -8,11 +8,11 @@ import (
 )
 
 var testTempFileLocation = "test_files/test-file.dont-track"
-var testProxyInfo = ProxyInfo{"crolek", "sweetPassword", "chuckrolek.com", "80", "", ""}
-var testConfigInfo = ConfigInfo{"proxy = ", "https-proxy = ", testTempFileLocation, "", true, testProxyInfo}
 var testHTTP_key = "PP_TEST_HTTP"
-var testHTTP_Value = "testhttp"
 var testHTTPS_key = "PP_TEST_HTTPS"
+var testProxyInfo = ProxyInfo{"crolek", "sweetPassword", "chuckrolek.com", "80", "", ""}
+var testConfigInfo = ConfigInfo{"proxy = ", "https-proxy = ", testTempFileLocation, "", true, testHTTP_key, testHTTPS_key, testProxyInfo}
+var testHTTP_Value = "testhttp"
 var testHTTPS_Value = "testhttps"
 var testHTTP_ProxyString = "http://crolek:sweetPassword@chuckrolek.com:80"
 var testHTTPS_ProxyString = testHTTP_ProxyString //yes, it's the same in this case.
@@ -24,10 +24,10 @@ func TestBuildConfig(t *testing.T) {
 	resetTestSystemVariables()
 	buildConfig(testConfigInfo)
 	IsTrueOrFalse(t, doesFileExist(testConfigInfo.configFilePath), true, "BuildConfig() created the test proxy file")
-	/*
-		these won't work work until I absractd out the variables from setProxyConfigVariables()
-		EqualString(t, os.Getenv(testHTTP_key), testHTTP_Value, "BuildConfig() set HTTP_PROXY")
-		EqualString(t, os.Getenv(testHTTPS_key), testHTTPS_Value, "BuildConfig() set HTTPS_PROXY")*/
+
+	/*these won't work work until I absractd out the variables from setProxyConfigVariables()*/
+	EqualString(t, os.Getenv(testHTTP_key), testHTTP_ProxyString, "BuildConfig() set HTTP_PROXY")
+	EqualString(t, os.Getenv(testHTTPS_key), testHTTPS_ProxyString, "BuildConfig() set HTTPS_PROXY")
 
 	removeTempFileLocation()
 	resetTestUpdateProxyFile()

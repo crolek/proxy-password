@@ -109,12 +109,12 @@ func getUserHomeDirectory() string {
 */
 
 func setProxyConfigVariables(configInfo ConfigInfo) (err error) {
-	httpError := setWindowsVariables("HTTP_PROXY", configInfo.proxyInfo.proxyHTTP_String)
+	httpError := setWindowsVariables(configInfo.systemVariableHTTP_key, configInfo.proxyInfo.proxyHTTP_String)
 	if httpError != nil {
 		return httpError
 	}
 
-	httpsError := setWindowsVariables("HTTPS_PROXY", configInfo.proxyInfo.proxyHTTPS_String)
+	httpsError := setWindowsVariables(configInfo.systemVariableHTTPS_key, configInfo.proxyInfo.proxyHTTPS_String)
 
 	if httpsError != nil {
 		return httpsError

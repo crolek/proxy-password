@@ -15,13 +15,16 @@ type ConfigInfo struct {
 	configFilePath          string
 	configFileName          string
 	configFilePathIsUserDir bool
+	systemVariableHTTP_key  string
+	systemVariableHTTPS_key string
 	proxyInfo               ProxyInfo
 }
 
 var NPM_Config = ConfigInfo{
-	FILE_HTTP_START:  "proxy = ",
-	FILE_HTTPS_START: "https-proxy = ",
-	configFileName:   ".npmrc",
+	FILE_HTTP_START:         "proxy = ",
+	FILE_HTTPS_START:        "https-proxy = ",
+	configFileName:          ".npmrc",
+	configFilePathIsUserDir: true,
 }
 
 func SetDefaultConfigurations() {
