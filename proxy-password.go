@@ -88,7 +88,7 @@ func setWindowsVariables(key string, value string) (err error) {
 
 func updateOrCreateProxyFile(configInfo ConfigInfo) (status string, err error) {
 	//This should go into a func or something for all of them.
-	configInfo.configFilePath = getUserHomeDirectory() + configInfo.configFileName
+	//configInfo.configFilePath = getUserHomeDirectory() + "\\" + configInfo.configFileName
 
 	if doesFileExist(configInfo.configFilePath) {
 		err := updateProxyFiles(configInfo)
@@ -158,4 +158,10 @@ func updateUsernamePassword(proxyString string, info ProxyInfo) string {
 	regex := regexp.MustCompile("(https?://)(.*?):(.*?)(@.*)")
 	results := regex.ReplaceAllString(proxyString, "${1}"+info.username+":"+info.password+"${4}")
 	return results
+}
+
+//@todo this needs done
+func updateUrlProxy(proxyString string, info ProxyInfo) string {
+
+	return ""
 }
