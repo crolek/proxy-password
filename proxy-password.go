@@ -33,7 +33,7 @@ func buildConfig(configInfo ConfigInfo) {
 	//build info
 	//i should probably have every method throw erros up to here and fail the build if
 	//anyone errors
-	configInfo.proxyInfo.proxyHTTP_String, configInfo.proxyInfo.proxyHTTPS_String = buildProxyString(configInfo)
+	configInfo.proxyInfo.proxyHTTP_String, configInfo.proxyInfo.proxyHTTPS_String = getProxyString(configInfo)
 	createNewFile(configInfo.configFilePath, getProxyFileContent(configInfo))
 
 	setVariablesError := setProxyConfigVariables(configInfo)
@@ -53,7 +53,35 @@ func buildConfig(configInfo ConfigInfo) {
 	}
 }
 
-func buildProxyString(configInfo ConfigInfo) (http string, https string) {
+func doesFileExist(filePath string) bool {
+	if _, err := os.Stat(filePath); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
+}
+
+func createNewFile(filepath string, content string) {
+	err := ioutil.WriteFile(filepath, []byte(content), 0644)
+
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+/*
+------------------------------Get------------------------------
+*/
+
+func getProxyFileContent(configInfo ConfigInfo) (content string) {
+	data := configInfo.FILE_HTTP_START + configInfo.proxyInfo.proxyHTTP_String + "\n"
+	data += configInfo.FILE_HTTPS_START + configInfo.proxyInfo.proxyHTTPS_String
+
+	return data
+}
+
+func getProxyString(configInfo ConfigInfo) (http string, https string) {
 	replacer := strings.NewReplacer(
 		"username", configInfo.proxyInfo.username,
 		"password", configInfo.proxyInfo.password,
@@ -65,6 +93,20 @@ func buildProxyString(configInfo ConfigInfo) (http string, https string) {
 
 	return h, hs
 }
+
+//currently only checking for .npmrc
+func getUserHomeDirectory() string {
+	currentUser, err := user.Current()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return currentUser.HomeDir
+}
+
+/*
+------------------------------Set------------------------------
+*/
 
 func setProxyConfigVariables(configInfo ConfigInfo) (err error) {
 	httpError := setWindowsVariables("HTTP_PROXY", configInfo.proxyInfo.proxyHTTP_String)
@@ -86,6 +128,10 @@ func setWindowsVariables(key string, value string) (err error) {
 	return setEnvError
 }
 
+/*
+------------------------------Update------------------------------
+*/
+
 func updateOrCreateProxyFile(configInfo ConfigInfo) (status string, err error) {
 	//This should go into a func or something for all of them.
 	//configInfo.configFilePath = getUserHomeDirectory() + "\\" + configInfo.configFileName
@@ -105,40 +151,6 @@ func updateOrCreateProxyFile(configInfo ConfigInfo) (status string, err error) {
 	}
 
 	//return a new error saying update/create file failed
-}
-
-//currently only checking for .npmrc
-func getUserHomeDirectory() string {
-	currentUser, err := user.Current()
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return currentUser.HomeDir
-}
-
-func doesFileExist(filePath string) bool {
-	if _, err := os.Stat(filePath); err != nil {
-		if os.IsNotExist(err) {
-			return false
-		}
-	}
-	return true
-}
-
-func createNewFile(filepath string, content string) {
-	err := ioutil.WriteFile(filepath, []byte(content), 0644)
-
-	if err != nil {
-		log.Println(err)
-	}
-}
-
-func getProxyFileContent(configInfo ConfigInfo) (content string) {
-	data := configInfo.FILE_HTTP_START + configInfo.proxyInfo.proxyHTTP_String + "\n"
-	data += configInfo.FILE_HTTPS_START + configInfo.proxyInfo.proxyHTTPS_String
-
-	return data
 }
 
 func updateProxyFiles(configInfo ConfigInfo) (err error) {

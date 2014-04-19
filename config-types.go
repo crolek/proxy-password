@@ -10,11 +10,12 @@ type ProxyInfo struct {
 }
 
 type ConfigInfo struct {
-	FILE_HTTP_START  string
-	FILE_HTTPS_START string
-	configFilePath   string
-	configFileName   string
-	proxyInfo        ProxyInfo
+	FILE_HTTP_START         string
+	FILE_HTTPS_START        string
+	configFilePath          string
+	configFileName          string
+	configFilePathIsUserDir bool
+	proxyInfo               ProxyInfo
 }
 
 var NPM_Config = ConfigInfo{

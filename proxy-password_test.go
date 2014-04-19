@@ -9,7 +9,7 @@ import (
 
 var testTempFileLocation = "test_files/test-file.dont-track"
 var testProxyInfo = ProxyInfo{"crolek", "sweetPassword", "chuckrolek.com", "80", "", ""}
-var testConfigInfo = ConfigInfo{"proxy = ", "https-proxy = ", testTempFileLocation, "", testProxyInfo}
+var testConfigInfo = ConfigInfo{"proxy = ", "https-proxy = ", testTempFileLocation, "", true, testProxyInfo}
 var testHTTP_key = "PP_TEST_HTTP"
 var testHTTP_Value = "testhttp"
 var testHTTPS_key = "PP_TEST_HTTPS"
@@ -34,15 +34,17 @@ func TestBuildConfig(t *testing.T) {
 	resetTestSystemVariables()
 }
 
-func TestBuildProxyInfo(t *testing.T) {
-	var testingConfig = NPM_Config
+func TestDoesFileExist(t *testing.T) {
+	IsTrueOrFalse(t, doesFileExist(".fileThatDoesNotExist"), false, "correctly detected the lack of a file")
 
-	testingConfig.proxyInfo = testProxyInfo
-	httpResult, httpsResult := buildProxyString(testingConfig)
+	err := ioutil.WriteFile(testTempFileLocation, []byte("sweet data"), 0644)
+	if err != nil {
+		log.Println(err)
+		t.Fail() //the Fail() might be redudant, but i guess thats okay
+	}
+	IsTrueOrFalse(t, doesFileExist(testTempFileLocation), true, "correctly detected the there was a test file")
 
-	EqualString(t, httpResult, testHTTP_ProxyString, "properly built the http string from proxyInfo")
-	EqualString(t, httpsResult, testHTTPS_ProxyString, "properly built the https string from proxyInfo")
-
+	removeTempFileLocation()
 }
 
 func TestCreateNewFile(t *testing.T) {
@@ -69,6 +71,26 @@ func TestCreateNewFile(t *testing.T) {
 
 	//remove the test file(s) to keep a clean testing area.
 	removeTempFileLocation()
+}
+
+func TestGetProxyString(t *testing.T) {
+	var testingConfig = NPM_Config
+
+	testingConfig.proxyInfo = testProxyInfo
+	httpResult, httpsResult := getProxyString(testingConfig)
+
+	EqualString(t, httpResult, testHTTP_ProxyString, "properly built the http string from proxyInfo")
+	EqualString(t, httpsResult, testHTTPS_ProxyString, "properly built the https string from proxyInfo")
+
+}
+
+func TestSetWindowsVariables(t *testing.T) {
+	resetTestSystemVariables()
+	setWindowsVariables(testHTTP_key, testHTTP_Value)
+	EqualString(t, os.Getenv(testHTTP_key), testHTTP_Value, testHTTP_key+" was properly set")
+	setWindowsVariables(testHTTPS_key, testHTTPS_Value)
+	EqualString(t, os.Getenv(testHTTPS_key), testHTTPS_Value, testHTTPS_key+" was properly set")
+	resetTestSystemVariables()
 }
 
 func TestUpdateProxyFile(t *testing.T) {
@@ -98,31 +120,13 @@ func TestUpdateProxyFile(t *testing.T) {
 	resetTestUpdateProxyFile()
 }
 
-func TestSetWindowsVariables(t *testing.T) {
-	resetTestSystemVariables()
-	setWindowsVariables(testHTTP_key, testHTTP_Value)
-	EqualString(t, os.Getenv(testHTTP_key), testHTTP_Value, testHTTP_key+" was properly set")
-	setWindowsVariables(testHTTPS_key, testHTTPS_Value)
-	EqualString(t, os.Getenv(testHTTPS_key), testHTTPS_Value, testHTTPS_key+" was properly set")
-	resetTestSystemVariables()
-}
-
 func TestUpdateUsernamePassword(t *testing.T) {
 	EqualString(t, updateUsernamePassword(PROXY_REPLACE_STRING, testProxyInfo), "http://crolek:sweetPassword@url:port", "updating clean username/password")
 }
 
-func TestDoesFileExist(t *testing.T) {
-	IsTrueOrFalse(t, doesFileExist(".fileThatDoesNotExist"), false, "correctly detected the lack of a file")
-
-	err := ioutil.WriteFile(testTempFileLocation, []byte("sweet data"), 0644)
-	if err != nil {
-		log.Println(err)
-		t.Fail() //the Fail() might be redudant, but i guess thats okay
-	}
-	IsTrueOrFalse(t, doesFileExist(testTempFileLocation), true, "correctly detected the there was a test file")
-
-	removeTempFileLocation()
-}
+/*
+------------------------------Utils------------------------------
+*/
 
 func removeTempFileLocation() {
 	_ = os.Remove(testTempFileLocation)
