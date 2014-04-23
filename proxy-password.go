@@ -43,13 +43,13 @@ func buildConfig(configInfo ConfigInfo) {
 		log.Println(setVariablesError)
 	}
 
-	status, updateCreateError := updateOrCreateProxyFile(configInfo)
+	updateCreateError := updateOrCreateProxyFile(configInfo)
 
 	if updateCreateError != nil {
 		log.Println("Error updating/creating proxy file(s): ")
 		log.Println(updateCreateError)
 	} else {
-		log.Println(status + " proxy file(s)")
+		log.Println("Updated/Created proxy file(s)")
 	}
 }
 
@@ -132,25 +132,10 @@ func setWindowsVariables(key string, value string) (err error) {
 ------------------------------Update------------------------------
 */
 
-func updateOrCreateProxyFile(configInfo ConfigInfo) (status string, err error) {
-	//This should go into a func or something for all of them.
-	//configInfo.configFilePath = getUserHomeDirectory() + "\\" + configInfo.configFileName
+func updateOrCreateProxyFile(configInfo ConfigInfo) (err error) {
+	//kick off the http and https set commands.
 
-	if doesFileExist(configInfo.configFilePath) {
-		err := updateProxyFiles(configInfo)
-		if err != nil {
-			log.Println(err)
-			return "", err
-		}
-
-		return "Updated", nil
-	} else {
-		createNewFile(configInfo.configFilePath, getProxyFileContent(configInfo))
-
-		return "Created", nil
-	}
-
-	//return a new error saying update/create file failed
+	return nil
 }
 
 func updateProxyFiles(configInfo ConfigInfo) (err error) {

@@ -11,7 +11,12 @@ var testTempFileLocation = "test_files/test-file.dont-track"
 var testHTTP_key = "PP_TEST_HTTP"
 var testHTTPS_key = "PP_TEST_HTTPS"
 var testProxyInfo = ProxyInfo{"crolek", "sweetPassword", "chuckrolek.com", "80", "", ""}
-var testConfigInfo = ConfigInfo{"proxy = ", "https-proxy = ", testTempFileLocation, "", true, testHTTP_key, testHTTPS_key, testProxyInfo}
+var testConfigInfo = ConfigInfo{
+	configFilePath:          testTempFileLocation,
+	systemVariableHTTP_key:  testHTTP_key,
+	systemVariableHTTPS_key: testHTTPS_key,
+	proxyInfo:               testProxyInfo,
+}
 var testHTTP_Value = "testhttp"
 var testHTTPS_Value = "testhttps"
 var testHTTP_ProxyString = "http://crolek:sweetPassword@chuckrolek.com:80"
