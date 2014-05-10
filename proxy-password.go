@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"os/user"
 	"regexp"
 	"strings"
@@ -33,8 +35,8 @@ func buildConfig(configInfo ConfigInfo) {
 	//build info
 	//i should probably have every method throw erros up to here and fail the build if
 	//anyone errors
-	configInfo.proxyInfo.proxyHTTP_String, configInfo.proxyInfo.proxyHTTPS_String = getProxyString(configInfo)
-	createNewFile(configInfo.configFilePath, getProxyFileContent(configInfo))
+	configInfo = getProxyString(configInfo)
+	//createNewFile(configInfo.configFilePath, getProxyFileContent(configInfo))
 
 	setVariablesError := setProxyConfigVariables(configInfo)
 
@@ -74,24 +76,24 @@ func createNewFile(filepath string, content string) {
 ------------------------------Get------------------------------
 */
 
-func getProxyFileContent(configInfo ConfigInfo) (content string) {
+/*func getProxyFileContent(configInfo ConfigInfo) (content string) {
 	data := configInfo.FILE_HTTP_START + configInfo.proxyInfo.proxyHTTP_String + "\n"
 	data += configInfo.FILE_HTTPS_START + configInfo.proxyInfo.proxyHTTPS_String
 
 	return data
-}
+}*/
 
-func getProxyString(configInfo ConfigInfo) (http string, https string) {
+func getProxyString(configInfo ConfigInfo) (updatedConfigInfo ConfigInfo) {
 	replacer := strings.NewReplacer(
 		"username", configInfo.proxyInfo.username,
 		"password", configInfo.proxyInfo.password,
 		"url", configInfo.proxyInfo.proxyUrl,
 		"port", configInfo.proxyInfo.port)
 
-	h := replacer.Replace(PROXY_REPLACE_STRING)
-	hs := h //a little bit of cheating
+	configInfo.proxyInfo.proxyHTTP_String = replacer.Replace(PROXY_REPLACE_STRING)
+	configInfo.proxyInfo.proxyHTTPS_String = configInfo.proxyInfo.proxyHTTP_String //a little bit of cheating
 
-	return h, hs
+	return configInfo
 }
 
 //currently only checking for .npmrc
@@ -135,6 +137,28 @@ func setWindowsVariables(key string, value string) (err error) {
 func updateOrCreateProxyFile(configInfo ConfigInfo) (err error) {
 	//kick off the http and https set commands.
 
+	/*args := append([]string{"test"}, os.Args[1:]...)
+	cmd := exec.Command("go", args...)
+	commands := append([])*/
+	//http
+	consoleOutput, consoleError, cmdErr := WindowsCMD(configInfo.FILE_HTTP_COMMAND + " " + configInfo.proxyInfo.proxyHTTP_String)
+	log.Println("Update Or Create: ")
+	log.Println(consoleOutput)
+	log.Println(consoleError)
+	if cmdErr != nil {
+		log.Println(cmdErr)
+	}
+
+	//apparently a blank space gets nuked on strings?
+	//https
+	consoleOutput, consoleError, cmdErr = WindowsCMD(configInfo.FILE_HTTPS_COMMAND + " " + configInfo.proxyInfo.proxyHTTPS_String)
+	log.Println("Update Or Create: ")
+	log.Println(consoleOutput)
+	log.Println(consoleError)
+	if cmdErr != nil {
+		log.Println(cmdErr)
+	}
+
 	return nil
 }
 
@@ -161,4 +185,23 @@ func updateUsernamePassword(proxyString string, info ProxyInfo) string {
 func updateUrlProxy(proxyString string, info ProxyInfo) string {
 
 	return ""
+}
+
+/*
+------------------------------Utils------------------------------
+*/
+
+func WindowsCMD(command string) (consoleOutput string, consoleError string, cmdErr error) {
+	var outputBuffer bytes.Buffer
+	var errorBuffer bytes.Buffer
+
+	cmd := exec.Command("cmd", "/C", command)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	cmd.Stdout = &outputBuffer
+	cmd.Stderr = &errorBuffer
+	err := cmd.Run()
+
+	return outputBuffer.String(), errorBuffer.String(), err
 }

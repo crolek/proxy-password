@@ -10,12 +10,8 @@ type ProxyInfo struct {
 }
 
 type ConfigInfo struct {
-	fileHTTPCommand         string
-	fileHTTP_value          string
-	fileHTTPSCommand        string
-	fileHTTPS_value         string
-	FILE_HTTP_START         string
-	FILE_HTTPS_START        string
+	FILE_HTTP_COMMAND       string
+	FILE_HTTPS_COMMAND      string
 	configFilePath          string
 	configFileName          string
 	configFilePathIsUserDir bool
@@ -25,8 +21,8 @@ type ConfigInfo struct {
 }
 
 var NPM_Config = ConfigInfo{
-	fileHTTPCommand:         "npm config set proxy ",
-	fileHTTPSCommand:        "npm config set https-proxy ",
+	FILE_HTTP_COMMAND:       "npm config set proxy ",
+	FILE_HTTPS_COMMAND:      "npm config set https-proxy ",
 	configFileName:          ".npmrc",
 	configFilePathIsUserDir: true,
 }

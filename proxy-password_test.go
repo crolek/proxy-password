@@ -10,17 +10,19 @@ import (
 var testTempFileLocation = "test_files/test-file.dont-track"
 var testHTTP_key = "PP_TEST_HTTP"
 var testHTTPS_key = "PP_TEST_HTTPS"
-var testProxyInfo = ProxyInfo{"crolek", "sweetPassword", "chuckrolek.com", "80", "", ""}
-var testConfigInfo = ConfigInfo{
-	configFilePath:          testTempFileLocation,
-	systemVariableHTTP_key:  testHTTP_key,
-	systemVariableHTTPS_key: testHTTPS_key,
-	proxyInfo:               testProxyInfo,
-}
 var testHTTP_Value = "testhttp"
 var testHTTPS_Value = "testhttps"
 var testHTTP_ProxyString = "http://crolek:sweetPassword@chuckrolek.com:80"
 var testHTTPS_ProxyString = testHTTP_ProxyString //yes, it's the same in this case.
+var testProxyInfo = ProxyInfo{"crolek", "sweetPassword", "chuckrolek.com", "80", "", ""}
+var testConfigInfo = ConfigInfo{
+	configFilePath:          testTempFileLocation,
+	FILE_HTTP_COMMAND:       "npm config set proxy",
+	FILE_HTTPS_COMMAND:      "npm config set https-proxy",
+	systemVariableHTTP_key:  testHTTP_key,
+	systemVariableHTTPS_key: testHTTPS_key,
+	proxyInfo:               testProxyInfo,
+}
 
 func TestBuildConfig(t *testing.T) {
 	//that lovely integration test
@@ -28,7 +30,7 @@ func TestBuildConfig(t *testing.T) {
 	resetTestUpdateProxyFile()
 	resetTestSystemVariables()
 	buildConfig(testConfigInfo)
-	IsTrueOrFalse(t, doesFileExist(testConfigInfo.configFilePath), true, "BuildConfig() created the test proxy file")
+	//IsTrueOrFalse(t, doesFileExist(testConfigInfo.configFilePath), true, "BuildConfig() created the test proxy file")
 
 	/*these won't work work until I absractd out the variables from setProxyConfigVariables()*/
 	EqualString(t, os.Getenv(testHTTP_key), testHTTP_ProxyString, "BuildConfig() set HTTP_PROXY")
@@ -82,10 +84,10 @@ func TestGetProxyString(t *testing.T) {
 	var testingConfig = NPM_Config
 
 	testingConfig.proxyInfo = testProxyInfo
-	httpResult, httpsResult := getProxyString(testingConfig)
+	testingConfig = getProxyString(testingConfig)
 
-	EqualString(t, httpResult, testHTTP_ProxyString, "properly built the http string from proxyInfo")
-	EqualString(t, httpsResult, testHTTPS_ProxyString, "properly built the https string from proxyInfo")
+	EqualString(t, testingConfig.proxyInfo.proxyHTTP_String, testHTTP_ProxyString, "properly built the http string from proxyInfo")
+	EqualString(t, testingConfig.proxyInfo.proxyHTTPS_String, testHTTPS_ProxyString, "properly built the https string from proxyInfo")
 
 }
 
