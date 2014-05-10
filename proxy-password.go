@@ -31,7 +31,7 @@ func main() {
 	fmt.Println("Your proxy info has been updated. :)")
 }
 
-func buildConfig(configInfo ConfigInfo) {
+func BuildConfig(configInfo ConfigInfo) {
 	//build info
 	//i should probably have every method throw erros up to here and fail the build if
 	//anyone errors

@@ -29,7 +29,7 @@ func TestBuildConfig(t *testing.T) {
 	removeTempFileLocation()
 	resetTestUpdateProxyFile()
 	resetTestSystemVariables()
-	buildConfig(testConfigInfo)
+	BuildConfig(testConfigInfo)
 	//IsTrueOrFalse(t, doesFileExist(testConfigInfo.configFilePath), true, "BuildConfig() created the test proxy file")
 
 	/*these won't work work until I absractd out the variables from setProxyConfigVariables()*/
