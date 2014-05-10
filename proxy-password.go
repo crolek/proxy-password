@@ -137,14 +137,11 @@ func setWindowsVariables(key string, value string) (err error) {
 func updateOrCreateProxyFile(configInfo ConfigInfo) (err error) {
 	//kick off the http and https set commands.
 
-	/*args := append([]string{"test"}, os.Args[1:]...)
-	cmd := exec.Command("go", args...)
-	commands := append([])*/
 	//http
 	consoleOutput, consoleError, cmdErr := WindowsCMD(configInfo.FILE_HTTP_COMMAND + " " + configInfo.proxyInfo.proxyHTTP_String)
 	log.Println("Update Or Create: ")
-	log.Println(consoleOutput)
-	log.Println(consoleError)
+	/*	log.Println(consoleOutput)
+		log.Println(consoleError)*/
 	if cmdErr != nil {
 		log.Println(cmdErr)
 	}
