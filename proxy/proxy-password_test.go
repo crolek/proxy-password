@@ -26,9 +26,7 @@ var testConfigInfo = ConfigInfo{
 
 func TestBuildConfig(t *testing.T) {
 	//that lovely integration test
-	removeTempFileLocation()
-	resetTestUpdateProxyFile()
-	resetTestSystemVariables()
+	cleanTestingArea()
 	BuildConfig(testConfigInfo)
 	//IsTrueOrFalse(t, doesFileExist(testConfigInfo.configFilePath), true, "BuildConfig() created the test proxy file")
 
@@ -36,9 +34,17 @@ func TestBuildConfig(t *testing.T) {
 	EqualString(t, os.Getenv(testHTTP_key), testHTTP_ProxyString, "BuildConfig() set HTTP_PROXY")
 	EqualString(t, os.Getenv(testHTTPS_key), testHTTPS_ProxyString, "BuildConfig() set HTTPS_PROXY")
 
-	removeTempFileLocation()
-	resetTestUpdateProxyFile()
-	resetTestSystemVariables()
+	cleanTestingArea()
+}
+
+func TestGit_BuildConfig(t *testing.T) {
+	var testGitConfigInfo = Git_Config
+	testGitConfigInfo.proxyInfo = testProxyInfo
+	cleanTestingArea()
+	BuildConfig(testGitConfigInfo)
+	//needs a .gitconfig file check.
+
+	cleanTestingArea()
 }
 
 func TestDoesFileExist(t *testing.T) {
@@ -134,6 +140,12 @@ func TestUpdateUsernamePassword(t *testing.T) {
 /*
 ------------------------------Utils------------------------------
 */
+
+func cleanTestingArea() {
+	removeTempFileLocation()
+	resetTestUpdateProxyFile()
+	resetTestSystemVariables()
+}
 
 func removeTempFileLocation() {
 	_ = os.Remove(testTempFileLocation)
