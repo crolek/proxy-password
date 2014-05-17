@@ -1,4 +1,4 @@
-package main
+package proxy
 
 import (
 	"bytes"
@@ -24,7 +24,7 @@ const (
 	PROXY_REPLACE_STRING = "http://username:password@url:port"
 )
 
-func main() {
+func ProxyTango() {
 	fmt.Println("Starting the update process")
 	//gearing up for the next feature :D
 	//buildConfig(configInfo)
