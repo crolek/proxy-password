@@ -2,3 +2,4 @@
 
 #to not track locally created test files (if needed)
 /test_files/*.dont-track
+proxy/goautotest.exe

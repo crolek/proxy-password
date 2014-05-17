@@ -76,13 +76,6 @@ func createNewFile(filepath string, content string) {
 ------------------------------Get------------------------------
 */
 
-/*func getProxyFileContent(configInfo ConfigInfo) (content string) {
-	data := configInfo.FILE_HTTP_START + configInfo.proxyInfo.proxyHTTP_String + "\n"
-	data += configInfo.FILE_HTTPS_START + configInfo.proxyInfo.proxyHTTPS_String
-
-	return data
-}*/
-
 func getProxyString(configInfo ConfigInfo) (updatedConfigInfo ConfigInfo) {
 	replacer := strings.NewReplacer(
 		"username", configInfo.proxyInfo.username,

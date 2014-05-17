@@ -27,6 +27,13 @@ var NPM_Config = ConfigInfo{
 	configFilePathIsUserDir: true,
 }
 
+var Git_Config = ConfigInfo{
+	FILE_HTTP_COMMAND:       "git config --global http.proxy ",
+	FILE_HTTPS_COMMAND:      "git config --global https.proxy ",
+	configFileName:          ".gitconfig",
+	configFilePathIsUserDir: true,
+}
+
 func SetDefaultConfigurations() {
 
 }
