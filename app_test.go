@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	/*"log"*/
 	"testing"
 
 	"github.com/crolek/proxy-password/proxy"
@@ -9,7 +9,6 @@ import (
 )
 
 func TestMain(t *testing.T) {
-	log.Println("we goood")
-	ui.Tango()
+	ui.StartServer()
 	proxy.ProxyTango()
 }

@@ -33,7 +33,3 @@ var Git_Config = ConfigInfo{
 	configFileName:          ".gitconfig",
 	configFilePathIsUserDir: true,
 }
-
-func SetDefaultConfigurations() {
-
-}
