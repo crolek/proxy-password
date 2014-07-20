@@ -13,17 +13,18 @@
 	<h1 class="text-center">Proxy-Password</h1>
 	<div class="row">
 		<div class="col-md-8 col-md-offset-2">
-			<form class="form-horizontal" role="form">
+			<form class="form-horizontal" role="form" id="proxypasswordform">
 				<div class="form-group">
 					<label for="results" class="col-md-2">Results</label>
 					<div class="col-md-10">
-						<input type="text" id="results" class="form-control" disabled>
+						<!-- <input type="text" id="results" class="form-control" disabled> -->
+						<span data-bind="text:results"></span>
 					</div>
 				</div>
 				<div class="form-group">
 					<label for="username" class="col-md-2">Username</label>
 					<div class="col-md-10">
-						<input type="text" id="username" class="form-control" placeholder="Username">
+						<input type="text" id="username" class="form-control" placeholder="Username" data-bind="value:username,events:['keyup']">
 					</div>
 				</div>
 				<div class="form-group">
@@ -35,7 +36,7 @@
 				<div class="form-group">
 					<label form="url" class="col-md-2">URL</label>
 					<div class="col-md-10">
-						<input type="text" id="url" class="form-control" placeholder="Proxy URL">
+						<input type="text" id="url" class="form-control" placeholder="Proxy URL" data-bind="value:passsword,events:['password']`">
 					</div>
 				</div>
 				<div class="form-group">
@@ -80,5 +81,10 @@
 
 	<script src="jquery-1.9.1.min.js"></script>
 	<script src="bootstrap.min.js"></script>
+	<script src="underscore.js"></script>
+	<script src="backbone.js"></script>
+	<script src="backbone.epoxy.min.js"></script>
+
+	<script src="app.js"></script>
 	</body>
 </html>

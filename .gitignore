@@ -4,3 +4,4 @@
 /test_files/*.dont-track
 proxy/goautotest.exe
 ui/goautotest.exe
+/web_assets/node_modules/**
